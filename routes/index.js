@@ -12,7 +12,7 @@ route.get('/stats', AppController.getStats);
 route.post('/users', UsersController.postNew);
 route.get('/connect', AuthController.getConnect);
 route.get('/disconnect', AuthController.getDisconnect);
-route.get('/users/me', AuthController.getMe);
+route.get('/users/me', authHandler, AuthController.getMe);
 route.post('/files', authHandler, FilesController.postUpload);
 route.get('/files/:id', authHandler, FilesController.getShow);
 route.get('/files', authHandler, FilesController.getIndex);

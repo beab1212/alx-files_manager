@@ -5,13 +5,12 @@ import redisClient from '../utils/redis';
 
 const AuthController = {
   async getConnect(req, res) {
-    //
     try {
-      const auth = req.headers.authorization;
+      const auth = req.headers.authorization.replace('Basic ', '');
       if (!auth) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-      const base64ToString = Buffer.from(auth.split(' ')[1], 'base64').toString('utf-8');
+      const base64ToString = Buffer.from(auth, 'base64').toString('utf-8');
       const [email, password] = base64ToString.split(':');
 
       const isEmailExist = await dbClient.client.db().collection('users').findOne({ email, password: sha1(password) });
@@ -20,7 +19,7 @@ const AuthController = {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const token = uuid4();
+      const token = await uuid4();
       await redisClient.set(`auth_${token}`, isEmailExist._id.toString(), 86400);
 
       return res.status(200).json({ token });

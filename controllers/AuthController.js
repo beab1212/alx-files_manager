@@ -50,12 +50,11 @@ const AuthController = {
   async getMe(req, res) {
     try {
       const userId = req.user;
-
       const isUserExist = await dbClient.client.db().collection('users').findOne({ _id: dbClient.ObjectId(userId) }, { projection: { password: 0 } });
       if (!isUserExist) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-      return res.status(200).json(isUserExist);
+      return res.status(200).json({ id: isUserExist._id, email: isUserExist.email });
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

@@ -184,17 +184,12 @@ const FilesController = {
       const { id = '', size = null } = req.params;
       let isFileExist;
       try {
-        isFileExist = await dbClient.client.db().collection('files').findOne({ _id: dbClient.ObjectId(id), userId: dbClient.ObjectId(userId) });
+        isFileExist = await dbClient.client.db().collection('files').findOne({ _id: dbClient.ObjectId(id) });
       } catch (err) {
         return res.status(404).json({ error: 'Not found' });
       }
-      if (!isFileExist) {
+      if (!isFileExist || (!isFileExist.isPublic && isFileExist.userId !== String(userId))) {
         return res.status(404).json({ error: 'Not found' });
-      }
-      if (isFileExist.isPublic === false) {
-        if (String(isFileExist.userId) !== String(userId)) {
-          return res.status(404).json({ error: 'Not found' });
-        }
       }
 
       if (isFileExist.type === 'folder') {
@@ -206,7 +201,7 @@ const FilesController = {
         fileLocation = `${fileLocation}_${size}`;
       }
       if (!existsSync(fileLocation)) {
-        return res.status(400).json({ error: 'Not found' });
+        return res.status(404).json({ error: 'Not found' });
       }
 
       const mimeType = contentType(isFileExist.name);

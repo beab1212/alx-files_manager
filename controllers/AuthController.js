@@ -10,7 +10,15 @@ const AuthController = {
       if (!auth) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-      const base64ToString = Buffer.from(auth, 'base64').toString('utf-8');
+      let base64ToString;
+      try {
+        base64ToString = Buffer.from(auth, 'base64').toString('utf-8');
+        if (!base64ToString) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+      } catch (err) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       const [email, password] = base64ToString.split(':');
 
       const isEmailExist = await dbClient.client.db().collection('users').findOne({ email, password: sha1(password) });

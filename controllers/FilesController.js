@@ -144,6 +144,7 @@ const FilesController = {
       return res.status(200).json({
         id,
         userId,
+        name: isFileExist.name,
         type: isFileExist.type,
         isPublic: true,
         parentId: isFileExist.parentId,
@@ -166,6 +167,7 @@ const FilesController = {
       return res.status(200).json({
         id,
         userId,
+        name: isFileExist.name,
         type: isFileExist.type,
         isPublic: false,
         parentId: isFileExist.parentId,

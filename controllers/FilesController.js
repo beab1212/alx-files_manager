@@ -117,7 +117,15 @@ const FilesController = {
         { $skip: parseInt(page, 10) * 20 },
         { $limit: 20 },
       ]).toArray();
-      return res.json(files);
+      const responseData = files.map((file) => ({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      }));
+      return res.json(responseData);
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

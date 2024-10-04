@@ -110,7 +110,7 @@ const FilesController = {
   async getIndex(req, res) {
     try {
       const userId = req.user;
-      const { parentId = 0 } = req.query;
+      const { parentId = '0' } = req.query;
       const page = /\d+/.test((req.query.page || '').toString()) ? Number.parseInt(req.query.page, 10) : 0;
 
       const files = await dbClient.client.db().collection('files').aggregate([
@@ -126,7 +126,7 @@ const FilesController = {
         isPublic: file.isPublic,
         parentId: file.parentId,
       }));
-      return res.status(200).json(responseData);
+      return res.json(responseData);
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

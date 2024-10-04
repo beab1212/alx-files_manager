@@ -115,7 +115,7 @@ const FilesController = {
 
       const files = await dbClient.client.db().collection('files').aggregate([
         { $match: { parentId, userId: dbClient.ObjectId(userId) } },
-        { $skip: parseInt(page, 10) * 20 },
+        { $skip: page * 20 },
         { $limit: 20 },
       ]).toArray();
       const responseData = files.map((file) => ({

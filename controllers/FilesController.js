@@ -115,7 +115,7 @@ const FilesController = {
 
       const files = await dbClient.client.db().collection('files').aggregate([
         { $match: { parentId, userId: dbClient.ObjectId(userId) } },
-        { $skip: parseInt(page, 10) * 20 },
+        { $skip: page * 20 },
         { $limit: 20 },
       ]).toArray();
       const responseData = files.map((file) => ({
@@ -124,9 +124,9 @@ const FilesController = {
         name: file.name,
         type: file.type,
         isPublic: file.isPublic,
-        parentId: file.parentId,
+        parentId: file.parentId === '0' ? 0 : file.parentId,
       }));
-      return res.json(responseData);
+      return res.status(200).json(responseData);
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

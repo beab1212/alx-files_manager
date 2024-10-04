@@ -110,28 +110,23 @@ const FilesController = {
   async getIndex(req, res) {
     try {
       const userId = req.user;
-      const { parentId = 0 } = req.query;
+      const { parentId = '0' } = req.query;
       const page = /\d+/.test((req.query.page || '').toString()) ? Number.parseInt(req.query.page, 10) : 0;
 
       const files = await dbClient.client.db().collection('files').aggregate([
         { $match: { parentId, userId: dbClient.ObjectId(userId) } },
         { $skip: parseInt(page, 10) * 20 },
         { $limit: 20 },
-        {
-          $project: {
-            _id: 0,
-            id: '$_id',
-            userId: '$userId',
-            name: '$name',
-            type: '$type',
-            isPublic: '$isPublic',
-            parentId: {
-              $cond: { if: { $eq: ['$parentId', '0'] }, then: 0, else: '$parentId' },
-            },
-          },
-        },
       ]).toArray();
-      return res.json(files);
+      const responseData = files.map((file) => ({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      }));
+      return res.json(responseData);
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

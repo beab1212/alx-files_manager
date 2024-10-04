@@ -87,7 +87,7 @@ const FilesController = {
   async getShow(req, res) {
     try {
       const userId = req.user;
-      const { id = '' } = req.params;
+      const { id = '000000000000000000000000' } = req.params;
 
       const isFileExist = await dbClient.client.db().collection('files').findOne({ _id: dbClient.ObjectId(id), userId: dbClient.ObjectId(userId) });
       if (!isFileExist) {
@@ -110,7 +110,8 @@ const FilesController = {
   async getIndex(req, res) {
     try {
       const userId = req.user;
-      const { parentId = 0, page = 0 } = req.query;
+      const { parentId = '0' } = req.query;
+      const page = /\d+/.test((req.query.page || '').toString()) ? Number.parseInt(req.query.page, 10) : 0;
 
       const files = await dbClient.client.db().collection('files').aggregate([
         { $match: { parentId, userId: dbClient.ObjectId(userId) } },

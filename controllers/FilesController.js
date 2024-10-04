@@ -114,7 +114,7 @@ const FilesController = {
       const page = /\d+/.test((req.query.page || '').toString()) ? Number.parseInt(req.query.page, 10) : 0;
 
       const files = await dbClient.client.db().collection('files').aggregate([
-        { $match: { parentId, userId: dbClient.ObjectId(userId) } },
+        { $match: { parentId: parentId === '0' ? 0 : parentId, userId: dbClient.ObjectId(userId) } },
         { $skip: page * 20 },
         { $limit: 20 },
       ]).toArray();

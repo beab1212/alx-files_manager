@@ -3,7 +3,7 @@ import { v4 as uuid4 } from 'uuid';
 import { contentType } from 'mime-types';
 import Queue from 'bull/lib/queue';
 import {
-  mkdir, writeFile, existsSync, realpath,
+  mkdir, writeFile, existsSync, realpath, stat,
 } from 'fs';
 import dbClient from '../utils/db';
 
@@ -11,6 +11,7 @@ const mkdirAsync = promisify(mkdir);
 const writeFileAsync = promisify(writeFile);
 // const readFileAsync = promisify(readFile);
 const realpathAsync = promisify(realpath);
+const statAsync = promisify(stat);
 
 const fileQueue = Queue('fileQueue');
 
@@ -183,13 +184,9 @@ const FilesController = {
       const userId = req.user || '';
       // const { isAuthenticated } = req;
       const { id = '', size = null } = req.params;
-      let isFileExist;
-      try {
-        isFileExist = await dbClient.client.db().collection('files').findOne({ _id: dbClient.ObjectId(id) });
-      } catch (err) {
-        return res.status(404).json({ error: 'Not found' });
-      }
-      if (!isFileExist || (!isFileExist.isPublic && isFileExist.userId !== String(userId))) {
+      const isFileExist = await dbClient.client.db().collection('files').findOne({ _id: dbClient.ObjectId(id) });
+
+      if (!isFileExist || (!isFileExist.isPublic && (isFileExist.userId !== String(userId)))) {
         return res.status(404).json({ error: 'Not found' });
       }
 
@@ -201,14 +198,20 @@ const FilesController = {
       if (size) {
         fileLocation = `${fileLocation}_${size}`;
       }
-      if (!existsSync(fileLocation)) {
+
+      if (existsSync(fileLocation)) {
+        const fileInfo = await statAsync(fileLocation);
+        if (!fileInfo.isFile()) {
+          return res.status(404).json({ error: 'Not found' });
+        }
+        res.status(404).json({ error: 'Not found' });
+      } else {
         return res.status(404).json({ error: 'Not found' });
       }
 
-      const mimeType = contentType(isFileExist.name);
-      const fileData = await realpathAsync(fileLocation);
-      res.setHeader('Content-Type', mimeType || 'text/plain ; charset=utf-8');
-      return res.status(200).sendFile(fileData);
+      const absoluteFilePath = await realpathAsync(fileLocation);
+      res.setHeader('Content-Type', contentType(isFileExist.name) || 'text/plain; charset=utf-8');
+      return res.status(200).sendFile(absoluteFilePath);
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

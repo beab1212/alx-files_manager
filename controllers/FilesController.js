@@ -87,7 +87,7 @@ const FilesController = {
   async getShow(req, res) {
     try {
       const userId = req.user;
-      const { id = '000000000000000000000000' } = req.params;
+      const { id = Buffer.alloc(24, '0').toString('utf-8') } = req.params;
 
       const isFileExist = await dbClient.client.db().collection('files').findOne({ _id: dbClient.ObjectId(id), userId: dbClient.ObjectId(userId) });
       if (!isFileExist) {

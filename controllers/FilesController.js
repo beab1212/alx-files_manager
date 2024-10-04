@@ -126,7 +126,7 @@ const FilesController = {
         isPublic: file.isPublic,
         parentId: file.parentId,
       }));
-      return res.json(responseData);
+      return res.status(200).json(responseData);
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
     }

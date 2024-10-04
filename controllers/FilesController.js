@@ -110,12 +110,12 @@ const FilesController = {
   async getIndex(req, res) {
     try {
       const userId = req.user;
-      const { parentId = '0' } = req.query;
+      const { parentId = 0 } = req.query;
       const page = /\d+/.test((req.query.page || '').toString()) ? Number.parseInt(req.query.page, 10) : 0;
 
       const files = await dbClient.client.db().collection('files').aggregate([
         { $match: { parentId, userId: dbClient.ObjectId(userId) } },
-        { $skip: page * 20 },
+        { $skip: parseInt(page, 10) * 20 },
         { $limit: 20 },
       ]).toArray();
       const responseData = files.map((file) => ({
@@ -124,7 +124,7 @@ const FilesController = {
         name: file.name,
         type: file.type,
         isPublic: file.isPublic,
-        parentId: file.parentId === '0' ? 0 : file.parentId,
+        parentId: file.parentId,
       }));
       return res.status(200).json(responseData);
     } catch (err) {
